@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>KiraFx | Advanced Payment + Telegram AI Suite</title>
+    <!-- Font Awesome 6 (free icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Stripe JS for card element -->
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0a0f1e 0%, #0c1222 100%);
+            min-height: 100vh;
+            color: #eef2ff;
+        }
+
+        /* Glassmorphism navbar */
+        .navbar {
+            backdrop-filter: blur(16px);
+            background: rgba(15, 25, 45, 0.7);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.7rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .logo i {
+            background: none;
+            -webkit-background-clip: unset;
+            color: #a855f7;
+            margin-right: 6px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links li {
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+            padding: 0.4rem 0.8rem;
+            border-radius: 40px;
+        }
+
+        .nav-links li:hover, .nav-links li.active {
+            background: rgba(139, 92, 246, 0.3);
+            color: #c084fc;
+        }
+
+        /* main container */
+        .container {
+            max-width: 1300px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* pages */
+        .page {
+            display: none;
+            animation: fadeSlide 0.4s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards & UI */
+        .glass-card {
+            background: rgba(20, 30, 55, 0.65);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 1.8rem;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.4);
+            transition: all 0.25s;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.8rem;
+            margin: 2rem 0;
+        }
+
+        .plan-card {
+            background: linear-gradient(145deg, #111827, #0f172a);
+            border-radius: 1.8rem;
+            padding: 1.8rem;
+            text-align: center;
+            border: 1px solid #2d3a5e;
+            transition: transform 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-6px);
+            border-color: #8b5cf6;
+        }
+
+        .amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #facc15;
+            margin: 1rem 0;
+        }
+
+        button.glow-btn {
+            background: linear-gradient(95deg, #3b82f6, #9333ea);
+            border: none;
+            padding: 0.8rem 1.6rem;
+            border-radius: 60px;
+            font-weight: 600;
+            color: white;
+            width: 100%;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 0 8px rgba(139,92,246,0.3);
+        }
+
+        button.glow-btn:hover {
+            scale: 1.02;
+            box-shadow: 0 0 15px #a855f7;
+        }
+
+        input, #card-element {
+            width: 100%;
+            padding: 0.9rem;
+            background: #0f172f;
+            border: 1px solid #2d3a5e;
+            border-radius: 1.2rem;
+            color: white;
+            margin-top: 0.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 1.2rem;
+            margin-bottom: 1.2rem;
+            display: none;
+        }
+
+        .alert.success {
+            background: #064e3b;
+            border-left: 6px solid #10b981;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .alert.error {
+            background: #7f1a1a;
+            border-left: 6px solid #ef4444;
+            display: flex;
+            gap: 10px;
+        }
+
+        .telegram-badge {
+            background: #1e293b;
+            border-radius: 60px;
+            padding: 0.5rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+        }
+
+        .owner-avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(145deg, #3b82f6, #a855f7);
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding: 1.5rem;
+            color: #6c7a9e;
+            border-top: 1px solid #1e293b;
+        }
+
+        @media (max-width: 700px) {
+            .navbar { flex-direction: column; }
+            .nav-links { gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo"><i class="fas fa-robot"></i> KiraFx · AI Pay</div>
+    <ul class="nav-links">
+        <li class="nav-link active" data-page="home"><i class="fas fa-home"></i> Home</li>
+        <li class="nav-link" data-page="payment"><i class="fas fa-credit-card"></i> Advance Pay</li>
+        <li class="nav-link" data-page="telegram"><i class="fab fa-telegram"></i> Telegram AI</li>
+        <li class="nav-link" data-page="about"><i class="fas fa-user-astronaut"></i> Owner</li>
+    </ul>
+</nav>
+
+<div class="container">
+    <!-- ========================= HOME PAGE ========================= -->
+    <div id="home-page" class="page active">
+        <div class="glass-card" style="text-align: center;">
+            <h1 style="font-size: 3rem;">⚡ Advance Payment <br> + Telegram AI</h1>
+            <p style="margin: 1rem 0;">Stripe-ready advance system | Real Telegram bridge | AI assistant</p>
+            <button class="glow-btn" style="width: auto; padding: 0.8rem 2rem;" id="explorePayBtn"><i class="fas fa-rocket"></i> Start Payment</button>
+        </div>
+        <div class="grid-3">
+            <div class="plan-card"><i class="fas fa-shield-alt fa-2x"></i><h3>Secure Advance</h3><p>Up to 50% deposit, PCI level 1</p></div>
+            <div class="plan-card"><i class="fab fa-telegram fa-2x"></i><h3>Telegram Bot</h3><p>Send alerts, chat with AI</p></div>
+            <div class="plan-card"><i class="fas fa-chart-line fa-2x"></i><h3>Real-time stats</h3><p>Track payments & engagement</p></div>
+        </div>
+    </div>
+
+    <!-- ========================= ADVANCE PAYMENT PAGE (Stripe Demo) ========================= -->
+    <div id="payment-page" class="page">
+        <div class="glass-card">
+            <h2><i class="fas fa-hand-holding-usd"></i> Advance Payment System</h2>
+            <p>Select plan or custom amount (minimum $10 advance)</p>
+            <div class="grid-3" style="margin-top: 1rem;">
+                <div class="plan-card" data-amount="50" data-plan="Basic Deposit">
+                    <i class="fas fa-box"></i><h3>Essential</h3>
+                    <div class="amount">$50</div><small>Advance: $25</small>
+                </div>
+                <div class="plan-card" data-amount="200" data-plan="Pro Deposit">
+                    <i class="fas fa-gem"></i><h3>Pro Advance</h3>
+                    <div class="amount">$200</div><small>Advance: $100</small>
+                </div>
+                <div class="plan-card" data-amount="500" data-plan="Elite">
+                    <i class="fas fa-crown"></i><h3>Elite</h3>
+                    <div class="amount">$500</div><small>Advance: $250</small>
+                </div>
+            </div>
+            
+            <div id="paymentAlert" class="alert"></div>
+
+            <div style="background: #0b1120; padding: 1.5rem; border-radius: 1.5rem; margin-top: 1rem;">
+                <h3>💳 Custom Advance Payment</h3>
+                <label>Full name</label>
+                <input type="text" id="customerName" placeholder="Alex Johnson">
+                <label>Email (receipt)</label>
+                <input type="email" id="customerEmail" placeholder="client@example.com">
+                <label>Amount USD (min $10)</label>
+                <input type="number" id="customAmount" placeholder="100" min="10">
+                <label>Card details</label>
+                <div id="cardElementContainer"></div>
+                <button id="payNowBtn" class="glow-btn"><i class="fab fa-stripe"></i> Pay Advance</button>
+                <p style="font-size: 0.7rem; margin-top: 1rem;">Demo mode active (test cards: 4242 4242 4242 4242)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================= TELEGRAM + AI PAGE ========================= -->
+    <div id="telegram-page" class="page">
+        <div class="glass-card">
+            <h2><i class="fab fa-telegram"></i> Telegram AI Assistant + Bot Bridge</h2>
+            <div class="telegram-badge"><i class="fab fa-telegram-plane"></i> Bot: @KiraFxAssistantBot (demo)</div>
+            <p style="margin: 1rem 0;">Connect your telegram ID to receive payment alerts & AI chat.</p>
+            <div style="background: #0f172f; border-radius: 1.5rem; padding: 1.5rem;">
+                <label><i class="fas fa-id-card"></i> Your Telegram User ID</label>
+                <input type="text" id="telegramUserId" placeholder="123456789 (get from @userinfobot)">
+                <button id="saveTelegramId" class="glow-btn"><i class="fas fa-link"></i> Link Telegram</button>
+                <div id="telegramStatus" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+            </div>
+            <div style="margin-top: 2rem;">
+                <h3>🤖 Kira AI Assistant (demo chat)</h3>
+                <div id="aiChatLog" style="background:#0a0f1a; border-radius: 1.2rem; padding: 1rem; height: 250px; overflow-y: auto; margin-bottom: 1rem;">
+                    <p><i class="fas fa-robot"></i> Kira: Hello! I can help with payments & telegram setup.</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="aiUserMsg" placeholder="Ask me anything... (payment, telegram, domain)" style="flex:1;">
+                    <button id="sendAiMsg" class="glow-btn" style="width: auto; padding: 0 1.5rem;"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+            <p class="telegram-badge" style="margin-top: 1rem;"><i class="fas fa-info-circle"></i> Send "pay status" or "link telegram" for simulated alert.</p>
+        </div>
+    </div>
+
+    <!-- ========================= ABOUT OWNER ========================= -->
+    <div id="about-page" class="page">
+        <div class="glass-card" style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center;">
+            <div class="owner-avatar"><i class="fas fa-user-ninja fa-3x"></i></div>
+            <div style="flex:1">
+                <h2>Ajmal / KiraFx</h2>
+                <p><i class="fas fa-map-marker-alt"></i> Founder & Fullstack architect</p>
+                <p>Passionate about payment gateways, telegram bots, and free web3 domains. Built KiraFx to merge AI + Telegram + Stripe advance payments. 6+ years in fintech and automation.</p>
+                <div style="display: flex; gap: 18px; margin-top: 1rem;">
+                    <span><i class="fab fa-github"></i> ajmalitsme-ship-it</span>
+                    <span><i class="fab fa-telegram"></i> @KiraFxSupport</span>
+                    <span><i class="fas fa-envelope"></i> kira@advancepay.xyz</span>
+                </div>
+            </div>
+        </div>
+        <div class="grid-3" style="margin-top: 2rem;">
+            <div class="plan-card"><i class="fas fa-trophy"></i><h3>300+</h3><p>Advance transactions</p></div>
+            <div class="plan-card"><i class="fas fa-robot"></i><h3>Telegram AI</h3><p>Active 24/7 alert system</p></div>
+            <div class="plan-card"><i class="fas fa-globe"></i><h3>.is-a.dev</h3><p>Free domain ready</p></div>
+        </div>
+    </div>
+    <footer>
+        <i class="fas fa-lock"></i> PCI simulated environment | Advance Payment + Telegram Core | KiraFx
+    </footer>
+</div>
+
+<script>
+    // ------------------------- GLOBALS -------------------------
+    let stripe = null;
+    let cardElement = null;
+    let isStripeReady = false;
+    let linkedTelegramId = localStorage.getItem('kira_telegram_id') || '';
+    let demoMode = true;   // Stripe test keys simulation (no backend required)
+    
+    // Pages navigation
+    const pages = {
+        home: document.getElementById('home-page'),
+        payment: document.getElementById('payment-page'),
+        telegram: document.getElementById('telegram-page'),
+        about: document.getElementById('about-page')
+    };
+    
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            const pageId = link.getAttribute('data-page');
+            Object.keys(pages).forEach(p => pages[p].classList.remove('active'));
+            pages[pageId].classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            if(pageId === 'payment' && !cardElement && !isStripeReady) initStripeTest();
+        });
+    });
+    
+    document.getElementById('explorePayBtn')?.addEventListener('click', () => {
+        document.querySelector('.nav-link[data-page="payment"]').click();
+    });
+    
+    // ---------- Stripe Simulated (Demo) with Card element mock - real Stripe test mode (public key demo)
+    function initStripeTest() {
+        // Use Stripe test publishable key (safe)
+        const testPk = 'pk_test_51Q4VZkFtxfJgB9Q0qL7tN7pKqX3ePzVcXbN5mV8oA0rFjYxLpQwRtYuIcLmNpOqR'; // dummy placeholder, but we will emulate card
+        if(typeof Stripe !== 'undefined'){
+            stripe = Stripe('pk_test_51HtUqLFoFZqg1VnPjKdOa5wE3cX7vBtN8yLkP0qR9sWtUxVz');
+            const elements = stripe.elements();
+            cardElement = elements.create('card', { style: { base: { color: '#fff', fontSize: '16px' } } });
+            cardElement.mount('#cardElementContainer');
+            isStripeReady = true;
+        } else {
+            document.getElementById('cardElementContainer').innerHTML = '<div class="telegram-badge">⚠️ Stripe JS not loaded, using demo card input</div><input id="dummyCard" placeholder="4242 4242 4242 4242">';
+        }
+    }
+    
+    function showAlertMessage(containerId, message, type) {
+        const alertDiv = document.getElementById(containerId);
+        if(!alertDiv) return;
+        alertDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i> ${message}`;
+        alertDiv.className = `alert ${type}`;
+        setTimeout(() => { alertDiv.className = 'alert'; alertDiv.innerHTML = ''; }, 5000);
+    }
+    
+    // simulate advance payment (demo)
+    async function processPayment(amount, name, email) {
+        if(!amount || amount < 5) { showAlertMessage('paymentAlert', 'Minimum advance: $5', 'error'); return false; }
+        const advancePercent = 0.4; // 40% advance simulation
+        const advanceValue = (amount * advancePercent).toFixed(2);
+        // simulate successful transaction with ID
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const txId = 'adv_'+Math.random().toString(36).substr(2, 8);
+                resolve({ success: true, txId, amount: amount, advance: advanceValue });
+            }, 1300);
+        });
+    }
+    
+    document.getElementById('payNowBtn')?.addEventListener('click', async () => {
+        const name = document.getElementById('customerName')?.value;
+        const email = document.getElementById('customerEmail')?.value;
+        let amount = parseFloat(document.getElementById('customAmount')?.value);
+        if(!amount || isNaN(amount)) amount = 50;
+        if(!name || !email) { showAlertMessage('paymentAlert', 'Enter name and email', 'error'); return; }
+        const btn = document.getElementById('payNowBtn');
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing';
+        const result = await processPayment(amount, name, email);
+        if(result.success){
+            showAlertMessage('paymentAlert', `✅ Advance payment $${amount} approved! TX: ${result.txId}. Receipt sent to ${email}`, 'success');
+            // telegram notification simulation (if user linked)
+            if(linkedTelegramId) {
+                addAIMessage(`💰 Payment notification sent to Telegram ID ${linkedTelegramId} (simulated)`);
+            }
+        } else {
+            showAlertMessage('paymentAlert', 'Payment failed, use test card', 'error');
+        }
+        btn.disabled = false; btn.innerHTML = '<i class="fab fa-stripe"></i> Pay Advance';
+    });
+    
+    // handle plan selection
+    document.querySelectorAll('.plan-card[data-amount]').forEach(card => {
+        card.addEventListener('click', () => {
+            const amt = card.getAttribute('data-amount');
+            if(document.getElementById('customAmount')) document.getElementById('customAmount').value = amt;
+            showAlertMessage('paymentAlert', `Plan selected: $${amt} advance ready`, 'success');
+        });
+    });
+    
+    // ---------- TELEGRAM & AI ----------
+    function addAIMessage(msg, isUser = false) {
+        const chatDiv = document.getElementById('aiChatLog');
+        if(!chatDiv) return;
+        const p = document.createElement('p');
+        p.style.margin = '8px 0';
+        p.innerHTML = isUser ? `<i class="fas fa-user"></i> You: ${msg}` : `<i class="fas fa-robot"></i> Kira AI: ${msg}`;
+        chatDiv.appendChild(p);
+        p.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    function handleAIQuery(query) {
+        const q = query.toLowerCase();
+        if(q.includes('payment') || q.includes('advance')) return "Advance payments secure via Stripe test mode. You can pay up to 50% deposit. To simulate real payment, use the card form.";
+        if(q.includes('telegram') || q.includes('bot')) return "Telegram bot @KiraFxAssistantBot can be linked. Provide your telegram ID above to get live alerts for every payment.";
+        if(q.includes('domain') || q.includes('github')) return "You can get free subdomain like .is-a.dev , .owns.it.com . Just submit JSON to their GitHub repo.";
+        if(q.includes('owner')) return "Owner: Ajmal, blockchain and full-stack dev. Built KiraFx to serve AI + Payment + Telegram.";
+        return "I can guide you through advance payments, linking Telegram ID, or setting up GitHub pages + free subdomains.";
+    }
+    
+    document.getElementById('sendAiMsg')?.addEventListener('click', () => {
+        const input = document.getElementById('aiUserMsg');
+        const msg = input.value.trim();
+        if(!msg) return;
+        addAIMessage(msg, true);
+        const reply = handleAIQuery(msg);
+        setTimeout(() => addAIMessage(reply), 400);
+        input.value = '';
+    });
+    
+    document.getElementById('saveTelegramId')?.addEventListener('click', () => {
+        const tgId = document.getElementById('telegramUserId')?.value.trim();
+        if(tgId && !isNaN(tgId)) {
+            linkedTelegramId = tgId;
+            localStorage.setItem('kira_telegram_id', tgId);
+            document.getElementById('telegramStatus').innerHTML = `<i class="fas fa-check-circle"></i> Telegram ID ${tgId} linked ✅ (demo alerts active)`;
+            addAIMessage(`Telegram user ${tgId} has been linked. Payment notifications active.`);
+        } else {
+            document.getElementById('telegramStatus').innerHTML = `<i class="fas fa-times-circle"></i> Invalid Telegram ID. Get ID from @userinfobot.`;
+        }
+    });
+    
+    if(linkedTelegramId) {
+        const statusDiv = document.getElementById('telegramStatus');
+        if(statusDiv) statusDiv.innerHTML = `<i class="fab fa-telegram"></i> Currently linked: ${linkedTelegramId}`;
+    }
+    
+    // auto init for card if payment page already
+    setTimeout(() => {
+        if(document.getElementById('payment-page').classList.contains('active')) initStripeTest();
+    }, 200);
+    
+    // extra: after loading default demo welcome
+    window.onload = () => {
+        if(!cardElement && document.getElementById('cardElementContainer')) initStripeTest();
+        addAIMessage("Welcome to KiraFx! I'm your AI assistant. Use 'Telegram' tab to link your ID, or go to Advance Pay for payment simulation.");
+    };
+</script>
+</body>
+  </html>
