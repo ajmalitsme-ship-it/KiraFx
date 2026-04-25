@@ -1,0 +1,121 @@
+{
+  "!! IMPORTANT !!": "Rename this file to 'yourname.is-a.dev.json' or 'yourname.is-a-fullstack.dev.json' based on domain choice",
+  
+  "===== FOR .is-a.dev DOMAIN =====": "Use this format for is-a.dev",
+  "owner": {
+    "username": "your-github-username"
+  },
+  "records": {
+    "CNAME": "Kirafx.github.io"
+  },
+
+  "===== FOR .is-a-fullstack.dev DOMAIN =====": "Use this format for developer domains",
+  "domain": "is-a-fullstack.dev",
+  "subdomain": "github.io",
+  "owner": {
+    "email": "your@email.com",
+    "repo": "https://github.com/yourusername/your-repo"
+  },
+  "records": {
+    "CNAME": "your-github-username.github.io"
+  },
+  "proxied": false,
+
+  "===== FOR .thedev.me DOMAIN =====": "Use this format for thedev.me",
+  "email_or_discord": "user@example.com",
+  "github_username": "yourusername",
+  "description": "My personal developer website",
+
+  "===== SUPPORTED RECORD TYPES =====": "Choose ONE record type based on your hosting",
+  "A_RECORD_EXAMPLE": {
+    "A": ["192.0.2.1"]
+  },
+  "AAAA_RECORD_EXAMPLE": {
+    "AAAA": ["2001:0db8:85a3::8a2e:0370:7334"]
+  },
+  "CNAME_RECORD_EXAMPLE": {
+    "CNAME": "yourusername.github.io"
+  },
+  "MX_RECORD_EXAMPLE": {
+    "MX": [
+      {
+        "priority": 10,
+        "value": "mx.example.com"
+      }
+    ]
+  },
+  "TXT_RECORD_EXAMPLE": {
+    "TXT": ["verification=abc123"]
+  },
+  "URL_REDIRECT_EXAMPLE": {
+    "URL": "https://your-actual-site.com"
+  },
+
+  "===== HOW TO SUBMIT =====": {
+    "step1": "Fork the repository (github.com/is-a-dev/register for .is-a.dev)",
+    "step2": "Create file in /domains folder with name: yourname.domain.json",
+    "step3": "Replace 'your-github-username' with your actual GitHub username",
+    "step4": "Keep ONLY one record type (delete the examples you don't need)",
+    "step5": "Commit and create a Pull Request",
+    "step6": "Wait for review and merge (24-72 hours)"
+  },
+
+  "===== AVAILABLE DOMAIN OPTIONS =====": [
+    {
+      "domain": "is-a.dev",
+      "repo": "github.com/is-a-dev/register",
+      "example_file": "yourname.json",
+      "live_domain": "yourname.is-a.dev",
+      "features": "PSL listed, supports A, AAAA, CNAME, MX, TXT, URL"
+    },
+    {
+      "domain": "owns.it.com",
+      "repo": "github.com/domainsproject/register",
+      "example_file": "yourname.owns.it.com.json",
+      "live_domain": "yourname.owns.it.com",
+      "features": "SSL, WAF, DNSSEC, supports all record types"
+    },
+    {
+      "domain": "is-a-fullstack.dev",
+      "repo": "github.com/Chirag-Nahata/.is-a-fullstack.dev",
+      "example_file": "yourname.is-a-fullstack.dev.json",
+      "live_domain": "yourname.is-a-fullstack.dev",
+      "features": "DNSSEC, Email support, HSTS"
+    },
+    {
+      "domain": "is-cool.dev",
+      "repo": "github.com/SmartArt09/New-Domain",
+      "example_file": "yourname.is-cool.dev.json",
+      "live_domain": "yourname.is-cool.dev",
+      "features": "PSL listed, full SSL/TLS"
+    },
+    {
+      "domain": "thedev.me",
+      "repo": "github.com/nischay42/subdomain-request",
+      "example_file": "yourname.thedev.me.json",
+      "live_domain": "yourname.thedev.me",
+      "features": "Supports A, AAAA, CNAME, NS, MX, TXT"
+    },
+    {
+      "domain": "is-not-a.dev",
+      "repo": "github.com/SmartArt09/New-Domain",
+      "example_file": "yourname.is-not-a.dev.json",
+      "live_domain": "yourname.is-not-a.dev",
+      "features": "Wildcard support, PSL listed"
+    },
+    {
+      "domain": "localplayer.dev",
+      "repo": "github.com/SmartArt09/New-Domain",
+      "file_name": "yourname.localplayer.dev.json",
+      "live_domain": "yourname.localplayer.dev",
+      "features": "DNSSEC, WAF protection"
+    },
+    {
+      "domain": "is-local.org",
+      "repo": "github.com/SmartArt09/New-Domain",
+      "file_name": "yourname.is-local.org.json",
+      "live_domain": "yourname.is-local.org",
+      "features": "PSL listed, Email support"
+    }
+  ]
+}
