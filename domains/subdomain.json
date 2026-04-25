@@ -1,1 +1,8 @@
-
+{
+    "owner": {
+        "username": "ajmalitsme-ship-it"
+    },
+    "records": {
+        "CNAME": "kirafx.is-a.dev"
+    }
+}
