@@ -1,1 +1,8 @@
-kirafx.is-a.dev
+{
+    "owner": {
+        "username": "your-github-username"
+    },
+    "records": {
+        "CNAME": "example.org"
+    }
+}
