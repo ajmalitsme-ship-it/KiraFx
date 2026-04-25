@@ -1,8 +1,8 @@
 {
     "owner": {
-        "username": "your-github-username"
+        "username": "ajmalitsme-ship-it"
     },
     "records": {
-        "CNAME": "example.org"
+        "CNAME": "kirafx.is-a.dev"
     }
 }
